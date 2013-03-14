@@ -1,2 +1,2 @@
 #minute	hour	mday	month	wday	who	command
-*/1	*	*	*	*	root	/local/scripts/track
+*/5	*	*	*	*	root	/local/scripts/track

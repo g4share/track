@@ -1,0 +1,8 @@
+This solution gets tracking information from http://www.posta.md:8081/, with some improvements:
+    it listens on 80 port, which is open everywhere (could someone explain me why they chose 8081?
+          58752 might look better, imho)
+    it is just only one page, you should not press "back button" - they use 3 pages
+    you could be notified on the mail
+   
+This "magic" is done by a couple of PHP page (not the best in the world), and a shell script
+which is run every 5 min by cron
