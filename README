@@ -6,3 +6,12 @@ This solution gets tracking information from http://www.posta.md:8081/, with som
    
 This "magic" is done by a couple of PHP page (not the best in the world), and a shell script
 which is run every 5 min by cron
+
+to test it 
+	open the page http://g4share.com/track/ 
+	enter the track id (ex. CG084659877US)
+	optionally your mail
+	wait 5 minutes
+	
+	and do not forget to check your inbox
+
