@@ -1,0 +1,85 @@
+#!/bin/sh
+loadPage(){
+	local srv=$1
+	local page=$2
+	local path=$3
+
+	local url="http://www.posta.md:8081/IPSWeb_item_events.asp?itemid=${1}&Submit=Accept"
+	if wget  -O  $path "${srv}${page}" > /dev/null 2>&1 ; then
+		echo $path
+	else
+		echo  ''
+	fi
+}
+
+strReplace(){
+	local file=$1
+
+	sed -e 's/"img\/ipswebtrack.jpg"/"http:\/\/track.g4share.net\/st\/img\/ipswebtrack.jpg"/g' \
+		-e 's/"css\/ipswt.css"/"http:\/\/track.g4share.net\/st\/css\/ipswt.css"/g' \
+		-e 's/"IPSWeb_submit.htm"/"http:\/\/track.g4share.net\/"/g'  \
+		< $file > "${file}_"
+
+	mv -f "${file}_" $file
+}
+
+
+sendMail(){
+	local email=$1
+	local bodyFile=$2
+	local trackingId=$3
+
+	echo "sending ${trackingId} to ${email}..."
+
+	/local/sendEmail/sendEmail \
+                          -f track@g4share.net \
+                          -u "Auto tracking - ${trackingId}" \
+                          -o message-file=$bodyFile \
+                          -o message-content-type=html \
+                          -t $email \
+                          -xu track \
+                          -xp sEcret123 \
+                          -s localhost:25
+
+}
+
+
+TRACKING_SRV=http://www.posta.md:8081/
+
+ROOT_FOLDER=/volume1/web/track/tasks/*
+TEMP_FOLDER=/tmp/track
+
+if [ ! -d "${TEMP_FOLDER}" ]; then
+	mkdir -p $TEMP_FOLDER
+fi
+
+for folder in $ROOT_FOLDER; do
+	mail=${folder##*/}
+
+	for file in ${folder}/*; do
+		trackId=${file##*/}
+		loadedPage=$(loadPage \
+			$TRACKING_SRV \
+			"IPSWeb_item_events.asp?itemid=${trackId}&Submit=Accept" \
+			"${TEMP_FOLDER}/${trackId}")
+
+		if [ ! $loadedPage = '' ] ; then
+			oldSize=$(awk -F " " 'NR==1 {print $1}' $file)
+			newSize=$(stat -t $loadedPage | cut -d " " -f 2)
+			
+			if [ ! $oldSize == $newSize ] ; then 
+				strReplace $loadedPage
+
+				sendMail \
+					$mail \
+					$loadedPage \
+					$trackId
+
+				echo $newSize > $file
+			fi
+		fi
+
+		rm -r $loadedPage
+        done
+done
+
